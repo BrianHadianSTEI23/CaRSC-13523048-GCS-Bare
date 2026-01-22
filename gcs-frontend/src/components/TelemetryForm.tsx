@@ -15,21 +15,12 @@ export default function TelemetryForm({ onSuccess }: Props) {
         battery: 100,
     });
 
-    const validate = () => {
-        return (
-            form.latitude >= -90 && form.latitude <= 90 &&
-            form.longitude >= -180 && form.longitude <= 180 &&
-            form.altitude >= 0 &&
-            form.speed >= 0 &&
-            form.battery >= 0 && form.battery <= 100
-        );
-    };
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const submit = async () => {
-        if (!validate()) {
-            alert("Invalid input");
-            return;
-        }
+        setError(null);
+        setSubmitting(true);
 
         try {
             const res = await fetch("http://127.0.0.1:8000/telemetry", {
@@ -38,40 +29,97 @@ export default function TelemetryForm({ onSuccess }: Props) {
                 body: JSON.stringify(form),
             });
 
-            if (!res.ok) {
-                throw new Error(await res.text());
-            }
+            if (!res.ok) throw new Error(await res.text());
 
-            onSuccess(); // 🔥 trigger refetch
-        } catch (err) {
-            console.error("Submit failed:", err);
-            alert("Failed to submit telemetry");
+            onSuccess();
+            setForm({ ...form, time: "" }); // soft reset
+        } catch {
+            setError("Failed to submit telemetry");
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <div>
-            <h3>Add Telemetry</h3>
+        <div style={{ border: "1px solid #ccc", padding: 16, borderRadius: 8 }}>
+            <h2>Add Telemetry</h2>
 
-            {Object.keys(form).map((key) => (
-                <input
-                    key={key}
-                    placeholder={key}
-                    type={key === "time" ? "text" : "number"}
-                    value={(form as any)[key]}
-                    onChange={(e) =>
-                        setForm({
-                            ...form,
-                            [key]:
-                                key === "time"
-                                    ? e.target.value
-                                    : Number(e.target.value),
-                        })
-                    }
-                />
-            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <Field label="Time">
+                    <input
+                        type="text"
+                        value={form.time}
+                        onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    />
+                </Field>
 
-            <button onClick={submit}>Submit</button>
+                <Field label="Latitude (°)">
+                    <input
+                        type="number"
+                        min={-90}
+                        max={90}
+                        value={form.latitude}
+                        onChange={(e) => setForm({ ...form, latitude: +e.target.value })}
+                    />
+                </Field>
+
+                <Field label="Longitude (°)">
+                    <input
+                        type="number"
+                        min={-180}
+                        max={180}
+                        value={form.longitude}
+                        onChange={(e) => setForm({ ...form, longitude: +e.target.value })}
+                    />
+                </Field>
+
+                <Field label="Altitude (m)">
+                    <input
+                        type="number"
+                        min={0}
+                        value={form.altitude}
+                        onChange={(e) => setForm({ ...form, altitude: +e.target.value })}
+                    />
+                </Field>
+
+                <Field label="Speed (m/s)">
+                    <input
+                        type="number"
+                        min={0}
+                        value={form.speed}
+                        onChange={(e) => setForm({ ...form, speed: +e.target.value })}
+                    />
+                </Field>
+
+                <Field label="Battery (%)">
+                    <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={form.battery}
+                        onChange={(e) => setForm({ ...form, battery: +e.target.value })}
+                    />
+                </Field>
+            </div>
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
+
+            <button
+                onClick={submit}
+                disabled={submitting}
+                style={{ marginTop: 16 }}
+            >
+                {submitting ? "Submitting..." : "Submit"}
+            </button>
         </div>
+    );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span>{label}</span>
+            {children}
+        </label>
     );
 }
