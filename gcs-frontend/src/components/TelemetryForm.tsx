@@ -1,57 +1,77 @@
 import { useState } from "react";
 import type { Telemetry } from "../types/telemetry";
 
-
 interface Props {
-onSubmit: (data: Omit<Telemetry, "id">) => void;
+    onSuccess: () => void;
 }
 
+export default function TelemetryForm({ onSuccess }: Props) {
+    const [form, setForm] = useState<Omit<Telemetry, "id">>({
+        time: "",
+        latitude: 0,
+        longitude: 0,
+        altitude: 0,
+        speed: 0,
+        battery: 100,
+    });
 
-export default function TelemetryForm({ onSubmit }: Props) {
-const [form, setForm] = useState({
-time: "",
-latitude: 0,
-longitude: 0,
-altitude: 0,
-speed: 0,
-battery: 100,
-});
+    const validate = () => {
+        return (
+            form.latitude >= -90 && form.latitude <= 90 &&
+            form.longitude >= -180 && form.longitude <= 180 &&
+            form.altitude >= 0 &&
+            form.speed >= 0 &&
+            form.battery >= 0 && form.battery <= 100
+        );
+    };
 
+    const submit = async () => {
+        if (!validate()) {
+            alert("Invalid input");
+            return;
+        }
 
-const validate = () => {
-return (
-form.latitude >= -90 && form.latitude <= 90 &&
-form.longitude >= -180 && form.longitude <= 180 &&
-form.altitude >= 0 &&
-form.speed >= 0 &&
-form.battery >= 0 && form.battery <= 100
-);
-};
+        try {
+            const res = await fetch("http://127.0.0.1:8000/telemetry", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
 
+            if (!res.ok) {
+                throw new Error(await res.text());
+            }
 
-const submit = () => {
-if (!validate()) {
-alert("Invalid input");
-return;
-}
-onSubmit(form);
-};
+            onSuccess(); // 🔥 trigger refetch
+        } catch (err) {
+            console.error("Submit failed:", err);
+            alert("Failed to submit telemetry");
+        }
+    };
 
+    return (
+        <div>
+            <h3>Add Telemetry</h3>
 
-return (
-<div>
-<h3>Add Telemetry</h3>
-{Object.keys(form).map(key => (
-<input
-key={key}
-placeholder={key}
-type={key === "time" ? "text" : "number"}
-onChange={e =>
-setForm({ ...form, [key]: key === "time" ? e.target.value : Number(e.target.value) })
-}
-/>
-))}
-<button onClick={submit}>Submit</button>
-</div>
-);
+            {Object.keys(form).map((key) => (
+                <input
+                    key={key}
+                    placeholder={key}
+                    type={key === "time" ? "text" : "number"}
+                    value={(form as any)[key]}
+                    onChange={(e) =>
+                        setForm({
+                            ...form,
+                            [key]:
+                                key === "time"
+                                    ? e.target.value
+                                    : Number(e.target.value),
+                        })
+                    }
+                />
+            ))}
+
+            <button onClick={submit}>Submit</button>
+        </div>
+    );
 }
