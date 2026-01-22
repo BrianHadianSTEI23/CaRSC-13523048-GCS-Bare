@@ -5,8 +5,6 @@ interface Props {
     onSuccess: () => void;
 }
 
-const API_URL = "http://backend:8000";
-
 export default function TelemetryForm({ onSuccess }: Props) {
     const [form, setForm] = useState<Omit<Telemetry, "id">>({
         time: "",
@@ -25,7 +23,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
         setSubmitting(true);
 
         try {
-            const res = await fetch(`${API_URL}/telemetry`, {
+            const res = await fetch("http://127.0.0.1:8000/telemetry", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),
@@ -55,7 +53,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
                     />
                 </Field>
 
-                <Field label="Latitude (°)">
+                <Field label="Latitude">
                     <input
                         type="number"
                         min={-90}
@@ -65,7 +63,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
                     />
                 </Field>
 
-                <Field label="Longitude (°)">
+                <Field label="Longitude">
                     <input
                         type="number"
                         min={-180}
@@ -75,7 +73,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
                     />
                 </Field>
 
-                <Field label="Altitude (m)">
+                <Field label="Altitude">
                     <input
                         type="number"
                         min={0}
@@ -84,7 +82,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
                     />
                 </Field>
 
-                <Field label="Speed (m/s)">
+                <Field label="Speed ">
                     <input
                         type="number"
                         min={0}
@@ -93,7 +91,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
                     />
                 </Field>
 
-                <Field label="Battery (%)">
+                <Field label="Battery">
                     <input
                         type="number"
                         min={0}
