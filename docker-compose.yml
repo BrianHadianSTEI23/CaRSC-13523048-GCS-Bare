@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./gcs-backend
+    container_name: gcs-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./gcs-backend/telemetry.db:/app/telemetry.db
+    environment:
+      - DATABASE_URL=sqlite:///./telemetry.db
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+
+  frontend:
+    build:
+      context: ./gcs-frontend
+    container_name: gcs-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

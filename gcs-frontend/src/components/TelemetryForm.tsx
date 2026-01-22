@@ -5,6 +5,8 @@ interface Props {
     onSuccess: () => void;
 }
 
+const API_URL = "http://backend:8000";
+
 export default function TelemetryForm({ onSuccess }: Props) {
     const [form, setForm] = useState<Omit<Telemetry, "id">>({
         time: "",
@@ -23,7 +25,7 @@ export default function TelemetryForm({ onSuccess }: Props) {
         setSubmitting(true);
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/telemetry", {
+            const res = await fetch(`${API_URL}/telemetry`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),

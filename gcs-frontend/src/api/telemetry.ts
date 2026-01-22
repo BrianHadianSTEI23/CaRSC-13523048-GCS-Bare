@@ -4,9 +4,10 @@ import type { Telemetry } from "../types/telemetry";
 let data: Telemetry[] = [];
 let idCounter = 1;
 
+let API_URL = "http://backend:8000";
 
 export const getTelemetry = async (): Promise<Telemetry[]> => {
-    const res = await fetch("http://127.0.0.1:8000/telemetry", {
+    const res = await fetch(`${API_URL}/telemetry`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

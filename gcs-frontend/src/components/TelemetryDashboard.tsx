@@ -3,7 +3,7 @@ import TelemetryForm from "./TelemetryForm";
 import TelemetryTable from "./TelemetryTable";
 import type { Telemetry } from "../types/telemetry";
 
-const API_URL = "http://127.0.0.1:8000/telemetry";
+const API_URL = "http://backend:8000/telemetry";
 
 export default function TelemetryPage() {
     const [data, setData] = useState<Telemetry[]>([]);
